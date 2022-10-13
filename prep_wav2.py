@@ -120,8 +120,7 @@ def nonConditionedWavParse(args):
     else:
         # It is NOT advisable to use the same data set for testing and validation
         # This gives a strong bias in evaluating the effectiveness of the training
-        print("\n!!WARNING!!\nThe test set and validation set are the same!")
-        print("Thus the test results will be significantly biased!\n")
+        print("The test set and validation set are the same.")
         in_test = in_val
         out_test = out_val
 
@@ -163,8 +162,7 @@ def conditionedWavParse(args):
         a = data['Data Sets'][0]["TestTarget"]
     except KeyError:
         seprateTestSet = False
-        print("\n!!WARNING!!\nnThe test set and validation set are the same!")
-        print("Thus the test results will be significantly biased!\n")
+        print("The test set and validation set are the same.")
 
 
     params = data["Number of Parameters"]
