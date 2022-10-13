@@ -14,6 +14,8 @@ def normalize(data):
     data_max = max(data)
     data_min = min(data)
     data_norm = max(data_max,abs(data_min))
+    if data_norm == 0:
+        print("[WARNING]: Audio file appears to contain all 0's, indicating a completely silent wav file. Check your out.wav file.")
     return data / data_norm
 
 
