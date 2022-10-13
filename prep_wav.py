@@ -187,8 +187,7 @@ def conditionedWavParse(args):
         a = data['Data Sets'][0]["TestTarget"]
     except KeyError:
         seprateTestSet = False
-        print("\n!!WARNING!!\nnThe test set and validation set are the same!")
-        print("Thus the test results will be significantly biased!\n")
+        print("The test set and validation set are the same.")
 
 
     params = data["Number of Parameters"]
