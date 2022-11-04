@@ -183,12 +183,12 @@ def conditionedWavParse(args):
         out_rate, out_data = wavfile.read(ds["TrainingTarget"])
         
         if out_rate != 44100:
-            print("\n\n\n[ERROR] The out.wav file has an invalid samplerate " +"("+ str(out_rate) +")")
+            print("\n\n\n[ERROR] The out*.wav file has an invalid samplerate " +"("+ str(out_rate) +")")
             print("[ERROR] Please re-export your wav file as 44100 samplerate (44.1kHz).\n\n\n")
             return
     
         if out_data.dtype != "int16" and out_data.dtype != "float32":
-            print("\n\n\n[ERROR] The out.wav file has an invalid data type " +"("+ str(out_data.dtype) +")")
+            print("\n\n\n[ERROR] The out*.wav file has an invalid data type " +"("+ str(out_data.dtype) +")")
             print("[ERROR] Please re-export your wav file as either PCM16 or FP32 data type (bit depth).\n\n\n")
             return        
         
