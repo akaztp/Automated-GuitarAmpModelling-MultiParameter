@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import random
 import json
+import os
 
 def save_wav(name, data):
     wavfile.write(name, 44100, data.flatten().astype(np.float32))
@@ -89,6 +90,12 @@ def sliceRandomPercentage(input_data, target_data, percentage):
 
 def nonConditionedWavParse(args):
     # Load and Preprocess Data ###########################################
+    if os.path.isfile(args.snapshot[1]) == True:
+        pass
+    else:
+        print("\n\n\n[ERROR] The \"" + args.snapshot[1] + "\" file could not be found. Ensure \"out.wav\" was uploaded to Colab correctly.\n\n\n")
+        return
+    
     in_rate, in_data = wavfile.read(args.snapshot[0])
     out_rate, out_data = wavfile.read(args.snapshot[1])
     
