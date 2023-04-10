@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import random
 import json
+import os
 
 def save_wav(name, data):
     wavfile.write(name, 44100, data.flatten().astype(np.float32))
@@ -177,7 +178,12 @@ def conditionedWavParse(args):
 
 
     for ds in data["Data Sets"]:
-
+        if os.path.isfile(ds["TrainingTarget"]) == True:
+            pass
+        else:
+            print("\n\n[ERROR] Input audio file could not be found: \"" + ds["TrainingTarget"] +"\" Ensure all five wav files were uploaded to Colab correctly for knob model.")
+            print("\nThese should be named: \"out1.wav\", \"out2.wav\", \"out3.wav\", \"out4.wav\", \"out5.wav\"\n\n")
+            return
         # Load and Preprocess Data
         in_rate, in_data = wavfile.read(ds["TrainingClean"])
         out_rate, out_data = wavfile.read(ds["TrainingTarget"])
