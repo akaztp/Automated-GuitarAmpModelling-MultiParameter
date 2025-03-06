@@ -1,3 +1,4 @@
 [submodule "CoreAudioML"]
 	path = CoreAudioML
-	url = https://github.com/GuitarML/CoreAudioML
+	url = https://github.com/akaztp/CoreAudioML
+	branch = main
