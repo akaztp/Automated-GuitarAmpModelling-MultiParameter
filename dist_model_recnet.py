@@ -92,14 +92,13 @@ def main(args):
 
     # Load dataset
     dataset = CAMLdataset.DataSet(data_dir='Data')
-
-    dataset.create_subset('train', frame_len=22050)
+    dataset.create_subset('train', frame_len=args.segment_length)
     dataset.load_file(os.path.join('train', args.file_name), 'train')
-
-    dataset.create_subset('val')
+    
+    dataset.create_subset('val', frame_len=args.segment_length) 
     dataset.load_file(os.path.join('val', args.file_name), 'val')
 
-        # If training is restarting, this will ensure the previously elapsed training time is added to the total
+    # If training is restarting, this will ensure the previously elapsed training time is added to the total
     init_time = time.time() - start_time + train_track['total_time']*3600
     # Set network save_state flag to true, so when the save_model method is called the network weights are saved
     network.save_state = True
@@ -221,8 +220,8 @@ if __name__ == "__main__":
     prsr.add_argument('--load_model', '-lm', default=True, help='load a pretrained model if it is found')
     prsr.add_argument('--seed', default=None, type=int, help='seed all of the random number generators if desired')
 
-    # pre-processing of the training/val/test data
-    prsr.add_argument('--segment_length', '-slen', type=int, default=22050, help='Training audio segment length in samples')
+    # pre-processing of the training/val/test data; default = 0.5s at 48kHz
+    prsr.add_argument('--segment_length', '-slen', type=int, default=24000, help='Training audio segment length in samples')
 
     # number of epochs and validation
     prsr.add_argument('--epochs', '-eps', type=int, default=2000, help='Max number of training epochs to run')
@@ -254,9 +253,9 @@ if __name__ == "__main__":
 
     # the validation and test sets are divided into shorter chunks before processing to reduce the amount of GPU memory used
     # you can probably ignore this unless during training you get a 'cuda out of memory' error
-    prsr.add_argument('--val_chunk', '-vs', type=int, default=100000, help='Number of sequence samples to process'
+    prsr.add_argument('--val_chunk', '-vs', type=int, default=684, help='Number of sequence samples to process'
                                                                                    'in each chunk of validation ')
-    prsr.add_argument('--test_chunk', '-tc', type=int, default=100000, help='Number of sequence samples to process'
+    prsr.add_argument('--test_chunk', '-tc', type=int, default=684, help='Number of sequence samples to process'
                                                                                    'in each chunk of validation ')
 
     # arguments for the network structure
