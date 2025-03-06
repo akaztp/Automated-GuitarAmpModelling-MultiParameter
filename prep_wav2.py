@@ -6,10 +6,10 @@ import json
 import os
 
 def save_wav(name, data):
-    wavfile.write(name, 44100, data.flatten().astype(np.float32))
+    wavfile.write(name, 48000, data.flatten().astype(np.float32))
 
 def save_wav_dont_flatten(name, data):
-    wavfile.write(name, 44100, data.astype(np.float32))
+    wavfile.write(name, 48000, data.astype(np.float32))
 
 def normalize(data):
     data_max = max(data)
@@ -187,17 +187,27 @@ def conditionedWavParse(args):
         # Load and Preprocess Data
         in_rate, in_data = wavfile.read(ds["TrainingClean"])
         out_rate, out_data = wavfile.read(ds["TrainingTarget"])
-        
-        if out_rate != 44100:
+
+        if out_rate != 48000:
             print("\n\n\n[ERROR] The out*.wav file has an invalid samplerate " +"("+ str(out_rate) +")")
-            print("[ERROR] Please re-export your wav file as 44100 samplerate (44.1kHz).\n\n\n")
+            print("[ERROR] Please re-export your wav file as 48000 samplerate (48kHz).\n\n\n")
             return
-    
-        if out_data.dtype != "int16" and out_data.dtype != "float32":
+
+        if out_data.dtype != "int16" and out_data.dtype != "float32" and out_data.dtype != "int32":
             print("\n\n\n[ERROR] The out*.wav file has an invalid data type " +"("+ str(out_data.dtype) +")")
-            print("[ERROR] Please re-export your wav file as either PCM16 or FP32 data type (bit depth).\n\n\n")
-            return        
-        
+            print("[ERROR] Please re-export your wav file as either PCM16, PCM32 or FP32 data type (bit depth).\n\n\n")
+            return
+
+        if in_rate != 48000:
+            print("\n\n\n[ERROR] The in*.wav file has an invalid samplerate " +"("+ str(in_rate) +")")
+            print("[ERROR] Please re-export your wav file as 48000 samplerate (48kHz).\n\n\n")
+            return
+
+        if in_data.dtype != "int16" and in_data.dtype != "float32" and in_data.dtype != "int32":
+            print("\n\n\n[ERROR] The in*.wav file has an invalid file format " +"("+ str(in_data.dtype) +")")
+            print("[ERROR] Please re-export your wav file as int16, int32, or float32.\n\n\n")
+            return
+
         # Trim the length of audio to equal the smaller wav file
         if len(in_data) > len(out_data):
             print("Trimming input audio to match output audio")
@@ -206,7 +216,7 @@ def conditionedWavParse(args):
             print("Trimming output audio to match input audio")
             out_data = out_data[0:len(in_data)]
 
-        #If stereo data, use channel 0
+        # If stereo data, use channel 0
         if len(in_data.shape) > 1:
             print("[WARNING] Stereo data detected for in_data, only using first channel (left channel)")
             in_data = in_data[:,0]
@@ -214,14 +224,26 @@ def conditionedWavParse(args):
             print("[WARNING] Stereo data detected for out_data, only using first channel (left channel)")
             out_data = out_data[:,0]
 
-        # Convert PCM16 to FP32
+        # Convert PCM16/PCM32 to FP32
         if in_data.dtype == "int16":
             in_data = in_data/32767
             print("In data converted from PCM16 to FP32")
+        elif in_data.dtype == "int32":
+            in_data = in_data/2147483647  # 2^31 - 1
+            print("In data converted from PCM32 to FP32")
+        elif in_data.dtype == "float32":
+            print("In data is already FP32")
+        
         if out_data.dtype == "int16":
             out_data = out_data/32767
             print("Out data converted from PCM16 to FP32")    
-        
+        elif out_data.dtype == "int32":
+            out_data = out_data/2147483647  # 2^31 - 1
+            print("Out data converted from PCM32 to FP32")    
+        elif out_data.dtype == "float32":
+            print("Out data is already FP32")    
+
+        # Convert to float32 and flatten
         clean_data = in_data.astype(np.float32).flatten()
         target_data = out_data.astype(np.float32).flatten()
 
@@ -279,24 +301,28 @@ def conditionedWavParse(args):
         #print(params_train.shape)
         
         # Reformat for normalized data
-        if (args.normalize):
-            in_train = np.array([in_train.flatten()])
-            in_val = np.array([in_val.flatten()])
-            in_test = np.array([in_test.flatten()])
-        
+        # if (args.normalize):
+        #     in_train = np.array([in_train.flatten()])
+        #     in_val = np.array([in_val.flatten()])
+        #     in_test = np.array([in_test.flatten()])
         # Append the audio and paramters to the full data sets 
-        all_clean_train = np.append(all_clean_train, np.append(in_train,params_train, axis=0), axis = 1)
-        all_clean_val = np.append(all_clean_val , np.append(in_val,params_val, axis=0), axis = 1)
-        all_clean_test = np.append(all_clean_test , np.append(in_test,params_test, axis=0), axis = 1)
+        all_clean_train = np.append(all_clean_train, np.append([in_train],params_train, axis=0), axis = 1)
+        all_clean_val = np.append(all_clean_val , np.append([in_val],params_val, axis=0), axis = 1)
+        all_clean_test = np.append(all_clean_test , np.append([in_test],params_test, axis=0), axis = 1)
 
         all_target_train = np.append(all_target_train, out_train)
         all_target_val = np.append(all_target_val, out_val)
         all_target_test = np.append(all_target_test, out_test)
 
+    # Make contiguous and ensure float32
+    all_clean_train = np.ascontiguousarray(all_clean_train.T, dtype=np.float32)
+    all_clean_val = np.ascontiguousarray(all_clean_val.T, dtype=np.float32)
+    all_clean_test = np.ascontiguousarray(all_clean_test.T, dtype=np.float32)
+    
     # Save the wav files 
-    save_wav_dont_flatten(args.path + "/train/" + args.name + "-input.wav", all_clean_train.T)
-    save_wav_dont_flatten(args.path + "/val/" + args.name + "-input.wav", all_clean_val.T)
-    save_wav_dont_flatten(args.path + "/test/" + args.name + "-input.wav", all_clean_test.T)
+    save_wav_dont_flatten(args.path + "/train/" + args.name + "-input.wav", all_clean_train)
+    save_wav_dont_flatten(args.path + "/val/" + args.name + "-input.wav", all_clean_val)
+    save_wav_dont_flatten(args.path + "/test/" + args.name + "-input.wav", all_clean_test)
 
     save_wav(args.path + "/train/" + args.name + "-target.wav", all_target_train)
     save_wav(args.path + "/val/" + args.name + "-target.wav", all_target_val)
