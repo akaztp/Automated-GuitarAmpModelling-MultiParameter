@@ -1,1 +1,0 @@
-{"model_data": {"model": "SimpleRNN", "input_size": 1, "skip": 1, "output_size": 1, "unit_type": "LSTM", "num_layers": 1, "hidden_size": 20, "bias_fl": true}}
