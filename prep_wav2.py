@@ -150,9 +150,11 @@ def conditionedWavParse(args):
 
     Note: This is intended to be used with the colab conditioning training script.
 
-    Note: Assumes all .wav files are mono, float32, no metadata
+    Note: Assumes all .wav files are mono, PCM16/PCM32/FP32,no metadata, 48kHz
     '''
-    # Open the configureation
+
+    print("Current working directory:", os.getcwd())  # This will print the current working directory
+    # Open the configuration
     with open(args.parameterize, "r") as read_file:
         data = json.load(read_file)
 
