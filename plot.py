@@ -7,17 +7,25 @@ from scipy import signal
 import argparse
 import struct
 
-# DEV NOTE: I don't think this is the correct way to 
-#           calculate Error to signal, should use the
-#           example in the traninig code instead.
+
 def error_to_signal(y, y_pred, use_filter=1):
     """
     Error to signal ratio with pre-emphasis filter:
     https://www.mdpi.com/2076-3417/10/3/766/htm
+    
+    Implementation based on ESRLoss from training.py
     """
     if use_filter == 1:
         y, y_pred = pre_emphasis_filter(y), pre_emphasis_filter(y_pred)
-    return np.sum(np.power(y - y_pred, 2)) / (np.sum(np.power(y, 2) + 1e-10))
+    
+    # Calculate squared error
+    error = np.power(y - y_pred, 2)
+    # Take mean of squared error
+    mean_error = np.mean(error)
+    # Calculate signal energy with small epsilon to prevent division by zero
+    energy = np.mean(np.power(y, 2)) + 1e-5
+    # Return error to signal ratio
+    return mean_error / energy
 
 
 def pre_emphasis_filter(x, coeff=0.95):
