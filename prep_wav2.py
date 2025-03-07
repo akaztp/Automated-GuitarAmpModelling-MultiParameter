@@ -178,15 +178,30 @@ def conditionedWavParse(args):
 
 
     for ds in data["Data Sets"]:
-        if os.path.isfile(ds["TrainingTarget"]) == True:
+        # Assume ds["TrainingTarget"] is just a filename
+        # Get the directory where audio files are stored
+        audio_files_dir = "./input/"  # You can change this to a specific directory if needed
+        
+        # Combine the directory with the filename
+        training_target_path = os.path.join(audio_files_dir, ds["TrainingTarget"])
+            
+        if os.path.isfile(training_target_path) == True:
             pass
         else:
-            print("\n\n[ERROR] Input audio file could not be found: \"" + ds["TrainingTarget"] +"\" Ensure all five wav files were uploaded to Colab correctly for knob model.")
-            print("\nThese should be named: \"out1.wav\", \"out2.wav\", \"out3.wav\", \"out4.wav\", \"out5.wav\"\n\n")
+            print("\n\n[ERROR] Input audio file could not be found: \"" + training_target_path +"\"")
             return
+            
+        # Check if training clean file exists
+        training_clean_path = os.path.join(audio_files_dir, ds["TrainingClean"])
+        if os.path.isfile(training_clean_path) == True:
+            pass
+        else:
+            print("\n\n[ERROR] Input audio file could not be found: \"" + training_clean_path +"\"")
+            return
+            
         # Load and Preprocess Data
-        in_rate, in_data = wavfile.read(ds["TrainingClean"])
-        out_rate, out_data = wavfile.read(ds["TrainingTarget"])
+        in_rate, in_data = wavfile.read(training_clean_path)
+        out_rate, out_data = wavfile.read(training_target_path)
 
         if out_rate != 48000:
             print("\n\n\n[ERROR] The out*.wav file has an invalid samplerate " +"("+ str(out_rate) +")")
