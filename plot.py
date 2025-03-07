@@ -54,20 +54,12 @@ def analyze_pred_vs_actual(args):
     4. Plots the spectrogram of (pred_signal - actual signal)
          The idea here is to show problem frequencies from the model training
     """
-    try:
-        output_wav = "Data/test/" + args.config_name + args.output_wav
-        pred_wav = "Results/" + args.config_name + "-RNN3-" + args.config_name + "/" + args.pred_wav
-        input_wav = "Data/test/" + args.config_name + args.input_wav
-        model_name = args.config_name
-        show_plots = args.show_plots
-        path = "Results/" + args.config_name + "-RNN3-" + args.config_name
-    except:
-        pred_wav = "Results/" + args["config_name"] + "-RNN3-" + args["config_name"] + "/" + args['pred_Wav']
-        output_wav = "Data/test/" + args["config_name"] + args['output_wav']
-        input_wav = "Data/test/" + args["config_name"] + args['input_wav']
-        model_name = args['config_name']
-        show_plots = args['show_plots']
-        path = "Results/" + args['config_name'] + "-RNN3-" + args['config_name']
+    model_name = args.model_name
+    path = "Results/" + model_name
+    output_wav = "Data/test/" + args.config_name + args.output_wav
+    pred_wav = path + "/" + args.pred_wav
+    input_wav = "Data/test/" + args.config_name + args.input_wav
+    show_plots = args.show_plots
 
     # Read the input wav file
     signal3, fs3 = read_wave(input_wav)
