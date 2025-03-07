@@ -53,7 +53,7 @@ def main(args):
             args.__setattr__(parameters, configs[parameters])
 
     if args.model == 'SimpleRNN':
-        model_name = args.model + args.device + '_' + args.unit_type + '_hs' + str(args.hidden_size) + '_pre_' + args.pre_filt
+        model_name = args.model + '_' + args.device + '_' + args.unit_type + '_hs' + str(args.hidden_size) + '_pre_' + args.pre_filt
     if args.pre_filt == 'A-Weighting':
         with open('Configs/' + 'b_Awght_mk2.csv') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
@@ -67,7 +67,7 @@ def main(args):
         args.pre_filt = None
 
     # Generate name of directory where results will be saved
-    save_path = os.path.join(args.save_location, args.device + '-' + args.load_config)
+    save_path = os.path.join(args.save_location, args.device)
 
     # Check if an existing saved model exists, and load it, otherwise creates a new model
     network = init_model(save_path, args)
@@ -214,7 +214,7 @@ if __name__ == "__main__":
                            'with the filename and the extensions -input.wav and -target.wav ')
     prsr.add_argument('--load_config', '-l',
                       help="File path, to a JSON config file, arguments listed in the config file will replace the defaults"
-                      , default='RNN3')
+                      , default=None)
     prsr.add_argument('--config_location', '-cl', default='Configs', help='Location of the "Configs" directory')
     prsr.add_argument('--save_location', '-sloc', default='Results', help='Directory where trained models will be saved')
     prsr.add_argument('--load_model', '-lm', default=True, help='load a pretrained model if it is found')
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     prsr.add_argument('--cuda', '-cu', default=1, help='Use GPU if available')
 
     # loss function/s
-    prsr.add_argument('--loss_fcns', '-lf', default={'ESRPre': 0.75, 'DC': 0.25},
+    prsr.add_argument('--loss_fcns', '-lf', default={'ESR': 0.75, 'DC': 0.25},
                       help='Which loss functions, ESR, ESRPre, DC. Argument is a dictionary with each key representing a'
                            'loss function name and the corresponding value being the multiplication factor applied to that'
                            'loss function, used to control the contribution of each loss function to the overall loss ')
