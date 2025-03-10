@@ -322,10 +322,18 @@ def conditionedWavParse(args):
         #     in_train = np.array([in_train.flatten()])
         #     in_val = np.array([in_val.flatten()])
         #     in_test = np.array([in_test.flatten()])
-        # Append the audio and paramters to the full data sets 
-        all_clean_train = np.append(all_clean_train, np.append([in_train],params_train, axis=0), axis = 1)
-        all_clean_val = np.append(all_clean_val , np.append([in_val],params_val, axis=0), axis = 1)
-        all_clean_test = np.append(all_clean_test , np.append([in_test],params_test, axis=0), axis = 1)
+        
+        # Append the audio and parameters to the full data sets 
+        if params == 0 or len(params_train) == 0:
+            # If there are no parameters, just append the audio
+            all_clean_train = np.append(all_clean_train, np.array([in_train]), axis=1)
+            all_clean_val = np.append(all_clean_val, np.array([in_val]), axis=1)
+            all_clean_test = np.append(all_clean_test, np.array([in_test]), axis=1)
+        else:
+            # If there are parameters, append both audio and parameters
+            all_clean_train = np.append(all_clean_train, np.append([in_train], params_train, axis=0), axis=1)
+            all_clean_val = np.append(all_clean_val, np.append([in_val], params_val, axis=0), axis=1)
+            all_clean_test = np.append(all_clean_test, np.append([in_test], params_test, axis=0), axis=1)
 
         all_target_train = np.append(all_target_train, out_train)
         all_target_val = np.append(all_target_val, out_val)
