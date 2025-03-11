@@ -1,5 +1,12 @@
 # Automated-Guitar Amplifier Modelling
 
+## Ztp Fork of GuitarML fork
+This fork made the following changes:
+- Added a new ipynb with support for multi-parameter models based on the one on https://github.com/GuitarML/Proteus
+- Also derived from Proteus, added prep_wav2.py
+- Removed lots of unnecessary files
+- Updated CoreAudioML to reference the fork https://github.com/akaztp/CoreAudioML of the original repository 
+
 ## GuitarML Fork
 This fork adds Colab Training, wav file pre-processing, results plotting, and some helpful printouts during training.
 Use the example config "config/RNN3-acoustic1-pre.json" to train models for [NeuralPi](https://github.com/GuitarML/NeuralPi)<br>
