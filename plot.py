@@ -113,7 +113,8 @@ def analyze_pred_vs_actual(args):
     ax3.grid("on")
 
     # Save the plot
-    plt.savefig(path+'/'+model_name + "_signal_comparison_e2s_" + str(round(e2s, 4)) + ".png", bbox_inches="tight")
+    comparison_plot_path = path+'/'+model_name + "_signal_comparison_e2s_" + str(round(e2s, 4)) + ".png"
+    plt.savefig(comparison_plot_path, bbox_inches="tight")
 
     # Create a zoomed in plot of 0.01 seconds centered at the max input signal value
     sig_temp = signal1.tolist()
@@ -125,7 +126,8 @@ def analyze_pred_vs_actual(args):
             max(signal2),
         ]
     )
-    plt.savefig(path+'/'+model_name + "_Detail_signal_comparison_e2s_" + str(round(e2s, 4)) + ".png", bbox_inches="tight")
+    detail_plot_path = path+'/'+model_name + "_Detail_signal_comparison_e2s_" + str(round(e2s, 4)) + ".png"
+    plt.savefig(detail_plot_path, bbox_inches="tight")
 
     # Reset the axis
     plt.axis([0, Time3[-1], min(signal2), max(signal2)])
@@ -143,6 +145,9 @@ def analyze_pred_vs_actual(args):
 
     if show_plots == 1:
         plt.show()
+    
+    # Return the paths to the generated plots
+    return comparison_plot_path, detail_plot_path
 
 
 if __name__ == "__main__":
@@ -156,4 +161,8 @@ if __name__ == "__main__":
     parser.add_argument("--path", default="wavs")
     parser.add_argument("--show_plots", default=1)
     args = parser.parse_args()
-    analyze_pred_vs_actual(args)
+    plot_paths = analyze_pred_vs_actual(args)
+    
+    # Print paths in a special format that can be easily parsed in the notebook
+    if plot_paths:
+        print("\nNOTEBOOK_DISPLAY_IMAGES:" + plot_paths[0] + "," + plot_paths[1])
