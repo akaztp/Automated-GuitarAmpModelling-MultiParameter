@@ -25,6 +25,7 @@ from pathlib import Path
 import shutil
 import pandas as pd
 from scipy.io import wavfile
+import random
 
 class HiddenSizeExperiment:
     def __init__(self, 
@@ -32,7 +33,8 @@ class HiddenSizeExperiment:
                  epochs=200,         # Epochs per model
                  base_results_dir="Results",
                  experiment_dir="hidden_size_experiment",
-                 config_path="./input/configuration.json"):
+                 config_path="./input/configuration.json",
+                 seed=None):         # Optional fixed seed
         
         # Set default hidden sizes if none provided
         self.hidden_sizes = hidden_sizes if hidden_sizes is not None else [16, 20, 32, 40, 64, 96, 128]
@@ -40,6 +42,9 @@ class HiddenSizeExperiment:
         self.base_results_dir = base_results_dir
         self.experiment_dir = experiment_dir
         self.config_path = config_path
+        
+        # Generate a random seed for this experiment run if none provided
+        self.seed = seed if seed is not None else random.randint(1, 100000)
         
         # Create experiment directory
         os.makedirs(os.path.join(self.base_results_dir, self.experiment_dir), exist_ok=True)
@@ -81,7 +86,7 @@ class HiddenSizeExperiment:
         cmd = [
             "python", "dist_model_recnet.py",
             "-eps", str(self.epochs),
-            "--seed", "42",
+            "--seed", str(self.seed),
             "-is", str(input_size),
             "-hs", str(hidden_size),
             "-ut", "LSTM",
@@ -100,6 +105,10 @@ class HiddenSizeExperiment:
         print(process.stdout)
         if process.stderr:
             print("Errors:", process.stderr)
+        
+        # Check if the command executed successfully
+        if process.returncode != 0:
+            print(f"Warning: Command exited with non-zero status: {process.returncode}")
         
         return {
             'model_name': model_name,
