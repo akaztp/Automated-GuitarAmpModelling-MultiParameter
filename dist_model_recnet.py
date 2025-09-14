@@ -85,7 +85,18 @@ def main(args):
 
     # Set up training optimiser + scheduler + loss fcns and training info tracker
     optimiser = torch.optim.Adam(network.parameters(), lr=args.learn_rate, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimiser, 'min', factor=0.5, patience=5, verbose=True)
+
+    # Modified for compatibility with newer PyTorch versions
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimiser, 'min', factor=0.5, patience=5)
+
+    # Custom print function to replicate verbose=True behavior
+    def lr_scheduler_step(scheduler, val_loss):
+        old_lr = scheduler.optimizer.param_groups[0]['lr']
+        scheduler.step(val_loss)
+        new_lr = scheduler.optimizer.param_groups[0]['lr']
+        if new_lr != old_lr:
+            print(f'Learning rate reduced from {old_lr} to {new_lr}')
+
     loss_functions = training.LossWrapper(args.loss_fcns, args.pre_filt)
     train_track = training.TrainTrack()
     writer = SummaryWriter(os.path.join('TensorboardData', model_name))
@@ -94,8 +105,8 @@ def main(args):
     dataset = CAMLdataset.DataSet(data_dir='Data')
     dataset.create_subset('train', frame_len=args.segment_length)
     dataset.load_file(os.path.join('train', args.file_name), 'train')
-    
-    dataset.create_subset('val', frame_len=args.segment_length) 
+
+    dataset.create_subset('val', frame_len=args.segment_length)
     dataset.load_file(os.path.join('val', args.file_name), 'val')
 
     # If training is restarting, this will ensure the previously elapsed training time is added to the total
@@ -121,8 +132,11 @@ def main(args):
         if epoch % args.validation_f == 0:
             val_ep_st_time = time.time()
             val_output, val_loss = network.process_data(dataset.subsets['val'].data['input'][0],
-                                             dataset.subsets['val'].data['target'][0], loss_functions, args.val_chunk)
-            scheduler.step(val_loss)
+                                                        dataset.subsets['val'].data['target'][0], loss_functions, args.val_chunk)
+
+            # Use our custom function instead of scheduler.step directly
+            lr_scheduler_step(scheduler, val_loss)
+
             print("Val loss:", val_loss)
             if val_loss < train_track['best_val_loss']:
                 patience_counter = 0
@@ -164,7 +178,7 @@ def main(args):
     print("Testing the final Model")
     # Test the model the training ended with
     test_output, test_loss = network.process_data(dataset.subsets['test'].data['input'][0],
-                                                 dataset.subsets['test'].data['target'][0], loss_functions, args.test_chunk)
+                                                  dataset.subsets['test'].data['target'][0], loss_functions, args.test_chunk)
     test_loss_ESR = lossESR(test_output, dataset.subsets['test'].data['target'][0])
     test_loss_DC = lossDC(test_output, dataset.subsets['test'].data['target'][0])
     write(os.path.join(save_path, "test_out_final.wav"), dataset.subsets['test'].fs, test_output.cpu().numpy()[:, 0, 0])
@@ -180,11 +194,11 @@ def main(args):
     best_val_net = miscfuncs.json_load('model_best', save_path)
     network = networks.load_model(best_val_net)
     test_output, test_loss = network.process_data(dataset.subsets['test'].data['input'][0],
-                                                 dataset.subsets['test'].data['target'][0], loss_functions, args.test_chunk)
+                                                  dataset.subsets['test'].data['target'][0], loss_functions, args.test_chunk)
     test_loss_ESR = lossESR(test_output, dataset.subsets['test'].data['target'][0])
     test_loss_DC = lossDC(test_output, dataset.subsets['test'].data['target'][0])
     write(os.path.join(save_path, "test_out_best.wav"),
-         dataset.subsets['test'].fs, test_output.cpu().numpy()[:, 0, 0])
+          dataset.subsets['test'].fs, test_output.cpu().numpy()[:, 0, 0])
     writer.add_scalar('Testing/BestTestLoss', test_loss.item())
     writer.add_scalar('Testing/BestTestESR', test_loss_ESR.item())
     writer.add_scalar('Testing/BestTestDC', test_loss_DC.item())
@@ -249,14 +263,14 @@ if __name__ == "__main__":
                            'loss function name and the corresponding value being the multiplication factor applied to that'
                            'loss function, used to control the contribution of each loss function to the overall loss ')
     prsr.add_argument('--pre_filt',   '-pf',   default='high_pass',
-                        help='FIR filter coefficients for pre-emphasis filter, can also read in a csv file')
+                      help='FIR filter coefficients for pre-emphasis filter, can also read in a csv file')
 
     # the validation and test sets are divided into shorter chunks before processing to reduce the amount of GPU memory used
     # you can probably ignore this unless during training you get a 'cuda out of memory' error
     prsr.add_argument('--val_chunk', '-vs', type=int, default=684, help='Number of sequence samples to process'
-                                                                                   'in each chunk of validation ')
+                                                                        'in each chunk of validation ')
     prsr.add_argument('--test_chunk', '-tc', type=int, default=684, help='Number of sequence samples to process'
-                                                                                   'in each chunk of validation ')
+                                                                         'in each chunk of validation ')
 
     # arguments for the network structure
     prsr.add_argument('--model', '-m', default='SimpleRNN', type=str, help='model architecture')
@@ -276,5 +290,4 @@ if __name__ == "__main__":
 
 
     main(args)
-
 
